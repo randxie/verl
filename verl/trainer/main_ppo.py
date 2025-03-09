@@ -77,7 +77,7 @@ def evaluate_equation(equation_str):
         return None
 
 
-def countdown_compute_score(solution_str, ground_truth, method='strict', format_score=0.1, score=1.):
+def countdown_compute_score(data_source, solution_str, ground_truth, method='strict', format_score=0.1, score=1., **kwargs):
     """The scoring function for countdown task.
     
     Args:
@@ -135,8 +135,6 @@ def get_custom_reward_fn(config):
     import importlib.util, os
 
     reward_fn_config = config.get("custom_reward_function") or {}
-    if reward_fn_config == "countdown":
-        return countdown_compute_score
 
     file_path = reward_fn_config.get("path")
     if not file_path:
@@ -253,7 +251,10 @@ def main_task(config):
     else:
         raise NotImplementedError
 
-    compute_score = get_custom_reward_fn(config)
+    if config.get("my_reward_function", "") == "countdown":
+        compute_score = countdown_compute_score
+    else:
+        compute_score = get_custom_reward_fn(config)
     reward_fn = reward_manager_cls(tokenizer=tokenizer, num_examine=0, compute_score=compute_score)
 
     # Note that we always use function-based RM for validation
